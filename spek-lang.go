@@ -16,22 +16,21 @@ import (
 
 func main() {
 	const n = 2048
-	const numBytes = n * 4
 
 	input := C.fftwf_alloc_real(n)
 	floats := (*[1 << 30]float32)(unsafe.Pointer(input))[:n:n]
-	ints := (*[1 << 30]int32)(unsafe.Pointer(input))[:n:n]
-	bytes := (*[1 << 30]byte)(unsafe.Pointer(input))[:numBytes:numBytes]
 
 	output := C.fftwf_alloc_complex(n/2 + 1)
 	complex := (*[1 << 30]float32)(unsafe.Pointer(output))[:(n/2+1)*2 : (n/2+1)*2]
 	p := C.fftwf_plan_dft_r2c_1d(n, input, output, C.FFTW_ESTIMATE)
 	const n2 = n * n
 
+	buf := make([]byte, n*4)
+	ints := (*[1 << 30]int32)(unsafe.Pointer(&buf[0]))[:n:n]
 	result := 0
 
 	for {
-		_, err := io.ReadFull(os.Stdin, bytes)
+		_, err := io.ReadFull(os.Stdin, buf)
 		if err != nil {
 			break
 		}
